@@ -60,10 +60,10 @@ const cancelDelete = () => {
 // Delete page
 const deletePage = async () => {
   if (!pageToDelete.value) return
-  
+
   try {
     const success = await pagesStore.deletePage(pageToDelete.value.id)
-    
+
     if (success) {
       toastService.success({
         title: 'Success',
@@ -104,26 +104,27 @@ const onDrop = async (targetPage: Page) => {
     draggedPage.value = null
     return
   }
-  
+
   // Create a new array with the updated order
-  const newOrder = [...pagesStore.pages]
+  const pages = Array.isArray(pagesStore.pages) ? pagesStore.pages : []
+  const newOrder = [...pages]
   const draggedIndex = newOrder.findIndex(p => p.id === draggedPage.value?.id)
   const targetIndex = newOrder.findIndex(p => p.id === targetPage.id)
-  
+
   // Remove the dragged item and insert it at the target position
   const [removed] = newOrder.splice(draggedIndex, 1)
   newOrder.splice(targetIndex, 0, removed)
-  
+
   // Update the sort_order property
   const updatedPages = newOrder.map((page, index) => ({
     ...page,
     sort_order: index
   }))
-  
+
   // Reset drag state
   isDragging.value = false
   draggedPage.value = null
-  
+
   // Save the new order
   try {
     await pagesStore.reorderPages(updatedPages.map(p => p.id))
@@ -182,7 +183,7 @@ const onDragEnd = () => {
     </div>
 
     <!-- No Pages -->
-    <div v-else-if="pagesStore.pages.length === 0" class="text-center py-12">
+    <div v-else-if="!Array.isArray(pagesStore.pages) || pagesStore.pages.length === 0" class="text-center py-12">
       <h3 class="text-xl font-bold mb-2">No pages found</h3>
       <p class="text-muted-foreground mb-4">Create your first page to get started</p>
       <button
@@ -229,7 +230,7 @@ const onDragEnd = () => {
           </thead>
           <tbody>
             <tr
-              v-for="(page, index) in pagesStore.pages"
+              v-for="(page, index) in (Array.isArray(pagesStore.pages) ? pagesStore.pages : [])"
               :key="page.id"
               class="border-b"
               draggable="true"
@@ -245,11 +246,11 @@ const onDragEnd = () => {
               <td class="py-3 px-4">{{ page.title }}</td>
               <td class="py-3 px-4">{{ page.slug }}</td>
               <td class="py-3 px-4">
-                <span 
+                <span
                   :class="[
                     'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                    page.published 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400' 
+                    page.published
+                      ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400'
                       : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400'
                   ]"
                 >

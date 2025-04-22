@@ -64,7 +64,8 @@ export const useProjectsStore = defineStore('projects', () => {
 
     try {
       const response = await axios.get(`/api/categories/${categoryId}/projects`)
-      return response.data
+      // Ensure we always return an array
+      return Array.isArray(response.data) ? response.data : []
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch projects by category'
       return []

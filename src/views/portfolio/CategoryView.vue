@@ -20,7 +20,9 @@ const categorySlug = computed(() => {
 
 // Get category from store
 const category = computed(() => {
-  return categoriesStore.categories.find(c => c.slug === categorySlug.value)
+  // Ensure categories is an array before using find
+  const categories = Array.isArray(categoriesStore.categories) ? categoriesStore.categories : []
+  return categories.find(c => c.slug === categorySlug.value)
 })
 
 // Get projects for this category
@@ -30,7 +32,7 @@ const categoryProjects = ref([])
 onMounted(async () => {
   try {
     // Load categories if not already loaded
-    if (categoriesStore.categories.length === 0) {
+    if (!Array.isArray(categoriesStore.categories) || categoriesStore.categories.length === 0) {
       await categoriesStore.fetchCategories()
     }
 
@@ -79,7 +81,7 @@ onMounted(async () => {
     </div>
 
     <!-- No Projects -->
-    <div v-else-if="categoryProjects.length === 0" class="py-12 text-center">
+    <div v-else-if="!categoryProjects || categoryProjects.length === 0" class="py-12 text-center">
       <h3 class="text-xl font-bold mb-2">No projects found</h3>
       <p class="text-muted-foreground">Check back later for updates</p>
     </div>
@@ -87,7 +89,7 @@ onMounted(async () => {
     <!-- Projects Grid -->
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <ProjectCard
-        v-for="project in categoryProjects"
+        v-for="project in (Array.isArray(categoryProjects) ? categoryProjects : [])"
         :key="project.id"
         :project="project"
       />

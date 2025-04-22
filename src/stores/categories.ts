@@ -22,10 +22,12 @@ export const useCategoriesStore = defineStore('categories', () => {
 
     try {
       const response = await axios.get('/api/categories')
-      categories.value = response.data
+      // Ensure we always set an array
+      categories.value = Array.isArray(response.data) ? response.data : []
       return categories.value
     } catch (err: any) {
       error.value = err.message || 'Failed to fetch categories'
+      categories.value = []
       return []
     } finally {
       loading.value = false
