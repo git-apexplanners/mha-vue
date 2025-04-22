@@ -1,0 +1,133 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import axios from 'axios'
+
+export interface Category {
+  id: string
+  name: string
+  slug: string
+  parent_id: string | null
+  created_at: string
+}
+
+export const useCategoriesStore = defineStore('categories', () => {
+  const categories = ref<Category[]>([])
+  const loading = ref(false)
+  const error = ref('')
+
+  // Get all categories
+  async function fetchCategories() {
+    loading.value = true
+    error.value = ''
+
+    try {
+      const response = await axios.get('/api/categories')
+      categories.value = response.data
+      return categories.value
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch categories'
+      return []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Get a single category by ID
+  async function fetchCategoryById(id: string) {
+    loading.value = true
+    error.value = ''
+
+    try {
+      const response = await axios.get(`/api/categories/${id}`)
+      return response.data
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch category'
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Create a new category (admin only)
+  async function createCategory(categoryData: Partial<Category>) {
+    loading.value = true
+    error.value = ''
+
+    try {
+      const response = await axios.post('/api/categories', categoryData)
+      categories.value.push(response.data)
+      return response.data
+    } catch (err: any) {
+      error.value = err.message || 'Failed to create category'
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Update a category (admin only)
+  async function updateCategory(id: string, categoryData: Partial<Category>) {
+    loading.value = true
+    error.value = ''
+
+    try {
+      const response = await axios.put(`/api/categories/${id}`, categoryData)
+
+      // Update the category in the categories array
+      const index = categories.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        categories.value[index] = response.data
+      }
+
+      return response.data
+    } catch (err: any) {
+      error.value = err.message || 'Failed to update category'
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Delete a category (admin only)
+  async function deleteCategory(id: string) {
+    loading.value = true
+    error.value = ''
+
+    try {
+      await axios.delete(`/api/categories/${id}`)
+
+      // Remove the category from the categories array
+      categories.value = categories.value.filter(c => c.id !== id)
+
+      return true
+    } catch (err: any) {
+      error.value = err.message || 'Failed to delete category'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Get parent categories (categories with no parent)
+  function getParentCategories() {
+    return categories.value.filter(category => !category.parent_id)
+  }
+
+  // Get child categories for a specific parent
+  function getChildCategories(parentId: string) {
+    return categories.value.filter(category => category.parent_id === parentId)
+  }
+
+  return {
+    categories,
+    loading,
+    error,
+    fetchCategories,
+    fetchCategoryById,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    getParentCategories,
+    getChildCategories
+  }
+})

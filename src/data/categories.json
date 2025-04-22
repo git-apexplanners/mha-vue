@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "name": "Residential",
+    "slug": "residential",
+    "description": "Residential architecture projects",
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z"
+  },
+  {
+    "id": "2",
+    "name": "Urban Design",
+    "slug": "urban-design",
+    "description": "Urban design and planning projects",
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z"
+  },
+  {
+    "id": "3",
+    "name": "Commercial",
+    "slug": "commercial",
+    "description": "Commercial architecture projects",
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z"
+  }
+]

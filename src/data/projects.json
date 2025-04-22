@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1",
+    "title": "Modern Residential Complex",
+    "slug": "modern-residential-complex",
+    "description": "A sustainable residential complex with modern amenities",
+    "content": "<p>This project features innovative design solutions for urban living.</p>",
+    "main_image_url": "https://placehold.co/600x400",
+    "gallery_image_urls": [
+      "https://placehold.co/600x400",
+      "https://placehold.co/600x400"
+    ],
+    "category_id": "1",
+    "published": true,
+    "created_at": "2023-01-15T12:00:00Z",
+    "updated_at": "2023-02-20T14:30:00Z"
+  },
+  {
+    "id": "2",
+    "title": "Urban Renewal Project",
+    "slug": "urban-renewal-project",
+    "description": "Revitalizing an abandoned industrial area into a vibrant community space",
+    "content": "<p>This urban renewal project transformed an abandoned industrial area into a vibrant community space.</p>",
+    "main_image_url": "https://placehold.co/600x400",
+    "gallery_image_urls": [
+      "https://placehold.co/600x400",
+      "https://placehold.co/600x400"
+    ],
+    "category_id": "2",
+    "published": true,
+    "created_at": "2023-03-10T09:15:00Z",
+    "updated_at": "2023-04-05T11:45:00Z"
+  },
+  {
+    "id": "3",
+    "title": "test",
+    "slug": "test",
+    "description": "test",
+    "content": "test",
+    "featured_image": null,
+    "main_image_url": "https://placehold.co/600x400",
+    "gallery_image_urls": [
+      "https://placehold.co/600x400",
+      "https://placehold.co/600x400",
+      "https://placehold.co/600x400"
+    ],
+    "category_id": "1",
+    "published": true,
+    "created_at": "2025-04-22T07:26:55.744Z",
+    "updated_at": "2025-04-22T07:26:55.745Z"
+  }
+]

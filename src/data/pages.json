@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "title": "Home",
+    "slug": "home",
+    "content": "<h1>Welcome to Michael Hart Architects</h1><p>We are a leading architectural firm specializing in residential, commercial, and urban design.</p>",
+    "meta_title": "Michael Hart Architects - Home",
+    "meta_description": "Michael Hart Architects is a leading architectural firm specializing in residential, commercial, and urban design.",
+    "published": true,
+    "sort_order": 0,
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z"
+  },
+  {
+    "id": "2",
+    "title": "About",
+    "slug": "about",
+    "content": "<h1>About Michael Hart Architects</h1><p>Learn about our history, mission, and values.</p>",
+    "meta_title": "About Michael Hart Architects",
+    "meta_description": "Learn about the history, mission, and values of Michael Hart Architects.",
+    "published": true,
+    "sort_order": 1,
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z"
+  },
+  {
+    "id": "3",
+    "title": "Services",
+    "slug": "services",
+    "content": "<h1>Our Services</h1><p>Explore the range of architectural services we offer.</p>",
+    "meta_title": "Services - Michael Hart Architects",
+    "meta_description": "Explore the range of architectural services offered by Michael Hart Architects.",
+    "published": true,
+    "sort_order": 2,
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z"
+  },
+  {
+    "id": "4",
+    "title": "Contact",
+    "slug": "contact",
+    "content": "<h1>Contact Us</h1><p>Get in touch with Michael Hart Architects.</p>",
+    "meta_title": "Contact Michael Hart Architects",
+    "meta_description": "Contact information for Michael Hart Architects.",
+    "published": true,
+    "sort_order": 3,
+    "created_at": "2023-01-01T00:00:00Z",
+    "updated_at": "2023-01-01T00:00:00Z"
+  }
+]
