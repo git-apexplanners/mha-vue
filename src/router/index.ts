@@ -1,10 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 // All routes are lazy-loaded for better performance
-// Mock auth store for build
-const authStore = {
-  user: null,
-  getCurrentUser: async () => null
-}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -293,14 +289,37 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   // Check if the route requires authentication
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const requiredRole = to.matched.find(record => record.meta.requiredRole)?.meta.requiredRole
 
   if (requiresAuth) {
-    // For development/demo purposes, we'll allow access to all routes
-    // In a real app, you would check authentication here
-    console.log('Route requires authentication, but allowing access for demo purposes')
+    // Get the auth store
+    const authStore = useAuthStore()
+
+    // Check if user is authenticated
+    if (!authStore.isAuthenticated()) {
+      // Redirect to login with the intended destination
+      return next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      })
+    }
+
+    // If a specific role is required, check for it
+    if (requiredRole) {
+      // Make sure user data is loaded
+      if (!authStore.user) {
+        await authStore.getCurrentUser()
+      }
+
+      // Check if user has the required role
+      if (!authStore.hasRole(requiredRole)) {
+        // Redirect to admin dashboard if they don't have the required role
+        return next({ path: '/admin' })
+      }
+    }
   }
 
-  // Always allow navigation
+  // If we made it here, allow navigation
   next()
 })
 

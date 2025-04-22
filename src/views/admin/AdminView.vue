@@ -22,12 +22,11 @@ export default {
     })
 
     onMounted(async () => {
-      // For demo purposes, we'll skip authentication check
-      // In a real app, you would uncomment the following code:
-      // if (!authStore.isAuthenticated()) {
-      //   router.push('/login')
-      //   return
-      // }
+      // Check if user is authenticated
+      if (!authStore.isAuthenticated()) {
+        router.push('/login')
+        return
+      }
 
       try {
         // Fetch data for dashboard
