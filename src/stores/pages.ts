@@ -27,11 +27,21 @@ export const usePagesStore = defineStore('pages', () => {
     error.value = ''
 
     try {
-      const response = await axios.get('/api/pages')
-      // Ensure we always set an array
-      pages.value = Array.isArray(response.data) ? response.data : []
-      return pages.value
+      // Try to fetch from API
+      try {
+        const response = await axios.get('/api/pages')
+        // Ensure we always set an array
+        pages.value = Array.isArray(response.data) ? response.data : []
+        return pages.value
+      } catch (apiErr) {
+        console.warn('API request failed, falling back to static JSON', apiErr)
+        // If API request fails, try to fetch from static JSON file
+        const staticResponse = await axios.get('/api/pages/index.json')
+        pages.value = Array.isArray(staticResponse.data) ? staticResponse.data : []
+        return pages.value
+      }
     } catch (err: any) {
+      console.error('Failed to fetch pages from both API and static JSON', err)
       error.value = err.response?.data?.error || 'Failed to fetch pages'
       pages.value = []
       return []
@@ -63,10 +73,30 @@ export const usePagesStore = defineStore('pages', () => {
     error.value = ''
 
     try {
-      const response = await axios.get(`/api/pages/slug/${slug}`)
-      currentPage.value = response.data
-      return currentPage.value
+      // Try to fetch from API
+      try {
+        const response = await axios.get(`/api/pages/slug/${slug}`)
+        currentPage.value = response.data
+        return currentPage.value
+      } catch (apiErr) {
+        console.warn('API request failed, falling back to static JSON', apiErr)
+        // If API request fails, try to fetch all pages and find by slug
+        if (pages.value.length === 0) {
+          // If pages aren't loaded yet, fetch them
+          await fetchPages()
+        }
+
+        // Find the page by slug
+        const page = pages.value.find(p => p.slug === slug)
+        if (page) {
+          currentPage.value = page
+          return page
+        }
+
+        throw new Error('Page not found')
+      }
     } catch (err: any) {
+      console.error('Failed to fetch page by slug from both API and static JSON', err)
       error.value = err.response?.data?.error || 'Failed to fetch page'
       return null
     } finally {

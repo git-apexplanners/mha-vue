@@ -4,12 +4,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import { useCategoriesStore } from '@/stores/categories'
 import { toastService } from '@/composables/useToast'
+import { useNavigation } from '@/composables/useNavigation'
+import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import type { Project } from '@/stores/projects'
 
 const route = useRoute()
 const router = useRouter()
 const projectsStore = useProjectsStore()
 const categoriesStore = useCategoriesStore()
+const { refreshCategories } = useNavigation()
 
 // Determine if we're editing or creating
 const isEditing = computed(() => route.params.id !== 'new')
@@ -19,6 +22,16 @@ const projectId = computed(() => route.params.id as string)
 const loading = ref(true)
 const saving = ref(false)
 const errors = ref<Record<string, string>>({})
+
+// Category modal state
+const showAddCategoryModal = ref(false)
+const newCategory = ref({
+  name: '',
+  slug: '',
+  description: ''
+})
+const categoryErrors = ref<Record<string, string>>({})
+const savingCategory = ref(false)
 
 // Form data
 const formData = ref<Partial<Project>>({
@@ -38,6 +51,7 @@ onMounted(async () => {
   try {
     // Load categories
     await categoriesStore.fetchCategories()
+    console.log('Categories loaded:', categoriesStore.categories)
 
     // If editing, load the project
     if (isEditing.value) {
@@ -45,12 +59,19 @@ onMounted(async () => {
 
       if (project) {
         formData.value = { ...project }
+        console.log('Loaded project with category_id:', formData.value.category_id)
       } else {
         toastService.error({
           title: 'Error',
           description: 'Project not found'
         })
         router.push('/admin/projects')
+      }
+    } else {
+      // For new projects, set a default category if available
+      if (categoriesStore.categories.length > 0) {
+        formData.value.category_id = categoriesStore.categories[0].id
+        console.log('Set default category_id:', formData.value.category_id)
       }
     }
   } catch (error) {
@@ -66,13 +87,21 @@ onMounted(async () => {
 
 // Generate slug from title
 const generateSlug = () => {
-  if (!formData.value.title) return
+  if (!formData.value.title) {
+    toastService.error({
+      title: 'Error',
+      description: 'Please enter a title first'
+    })
+    return
+  }
 
   formData.value.slug = formData.value.title
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
+
+  console.log('Generated slug:', formData.value.slug)
 }
 
 // Validate form
@@ -166,6 +195,94 @@ const removeGalleryImage = (index: number) => {
   if (!formData.value.gallery_image_urls) return
 
   formData.value.gallery_image_urls = formData.value.gallery_image_urls.filter((_, i) => i !== index)
+}
+
+// Generate slug for new category
+const generateCategorySlug = () => {
+  if (!newCategory.value.name) {
+    toastService.error({
+      title: 'Error',
+      description: 'Please enter a category name first'
+    })
+    return
+  }
+
+  newCategory.value.slug = newCategory.value.name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+
+  console.log('Generated category slug:', newCategory.value.slug)
+}
+
+// Validate category form
+const validateCategoryForm = () => {
+  const newErrors: Record<string, string> = {}
+
+  if (!newCategory.value.name?.trim()) {
+    newErrors.name = 'Name is required'
+  }
+
+  if (!newCategory.value.slug?.trim()) {
+    newErrors.slug = 'Slug is required'
+  } else if (!/^[a-z0-9-]+$/.test(newCategory.value.slug)) {
+    newErrors.slug = 'Slug can only contain lowercase letters, numbers, and hyphens'
+  }
+
+  categoryErrors.value = newErrors
+  return Object.keys(newErrors).length === 0
+}
+
+// Save new category
+const saveCategory = async () => {
+  if (!validateCategoryForm()) {
+    toastService.error({
+      title: 'Validation Error',
+      description: 'Please fix the errors in the form'
+    })
+    return
+  }
+
+  savingCategory.value = true
+
+  try {
+    const result = await categoriesStore.createCategory(newCategory.value)
+
+    if (result) {
+      toastService.success({
+        title: 'Success',
+        description: 'Category created successfully'
+      })
+
+      // Set the new category as the selected category
+      formData.value.category_id = result.id
+
+      // Reset the form
+      newCategory.value = {
+        name: '',
+        slug: '',
+        description: ''
+      }
+
+      // Close the modal
+      showAddCategoryModal.value = false
+
+      // Refresh the navigation to show the new category
+      refreshCategories()
+      console.log('Navigation refreshed with new category')
+    } else {
+      throw new Error('Failed to create category')
+    }
+  } catch (error) {
+    console.error('Error saving category:', error)
+    toastService.error({
+      title: 'Error',
+      description: 'Failed to create category. Please try again.'
+    })
+  } finally {
+    savingCategory.value = false
+  }
 }
 </script>
 
@@ -262,15 +379,14 @@ const removeGalleryImage = (index: number) => {
           <label for="content" class="text-sm font-medium">
             Content
           </label>
-          <textarea
+          <RichTextEditor
             id="content"
             v-model="formData.content"
-            class="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Detailed content of the project"
-            rows="8"
-          ></textarea>
+            placeholder="Start typing your project content here..."
+            :error="errors.content"
+          />
           <p class="text-sm text-muted-foreground">
-            The full content of the project page (supports HTML)
+            Use the toolbar above to format your content
           </p>
         </div>
 
@@ -280,19 +396,32 @@ const removeGalleryImage = (index: number) => {
             <label for="category" class="text-sm font-medium">
               Category <span class="text-destructive">*</span>
             </label>
-            <select
-              id="category"
-              v-model="formData.category_id"
-              :class="[
-                'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                errors.category_id ? 'border-destructive focus:ring-destructive' : ''
-              ]"
-            >
-              <option value="" disabled>Select a category</option>
-              <option v-for="category in categoriesStore.categories" :key="category.id" :value="category.id">
-                {{ category.name }}
-              </option>
-            </select>
+            <div class="flex space-x-2">
+              <select
+                id="category"
+                v-model="formData.category_id"
+                :class="[
+                  'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                  errors.category_id ? 'border-destructive focus:ring-destructive' : ''
+                ]"
+              >
+                <option value="" disabled>Select a category</option>
+                <option v-for="category in categoriesStore.categories" :key="category.id" :value="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+              <button
+                type="button"
+                class="px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center"
+                @click="showAddCategoryModal = true"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                  <path d="M12 5v14"></path>
+                  <path d="M5 12h14"></path>
+                </svg>
+                New
+              </button>
+            </div>
             <p v-if="errors.category_id" class="text-sm text-destructive">{{ errors.category_id }}</p>
           </div>
 
@@ -500,5 +629,102 @@ const removeGalleryImage = (index: number) => {
         </button>
       </div>
     </form>
+
+    <!-- Add Category Modal -->
+    <div v-if="showAddCategoryModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-card rounded-lg p-6 shadow-lg w-full max-w-md mx-4">
+        <h2 class="text-xl font-bold mb-4">Add New Category</h2>
+
+        <form @submit.prevent="saveCategory" class="space-y-4">
+          <!-- Name -->
+          <div class="space-y-2">
+            <label for="category-name" class="text-sm font-medium">
+              Name <span class="text-destructive">*</span>
+            </label>
+            <input
+              id="category-name"
+              v-model="newCategory.name"
+              type="text"
+              :class="[
+                'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                categoryErrors.name ? 'border-destructive focus-visible:ring-destructive' : ''
+              ]"
+              placeholder="Category name"
+              @blur="generateCategorySlug"
+            />
+            <p v-if="categoryErrors.name" class="text-sm text-destructive">{{ categoryErrors.name }}</p>
+          </div>
+
+          <!-- Slug -->
+          <div class="space-y-2">
+            <label for="category-slug" class="text-sm font-medium">
+              Slug <span class="text-destructive">*</span>
+            </label>
+            <div class="flex">
+              <input
+                id="category-slug"
+                v-model="newCategory.slug"
+                type="text"
+                :class="[
+                  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                  categoryErrors.slug ? 'border-destructive focus-visible:ring-destructive' : ''
+                ]"
+                placeholder="category-slug"
+              />
+              <button
+                type="button"
+                class="ml-2 px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                @click="generateCategorySlug"
+              >
+                Generate
+              </button>
+            </div>
+            <p v-if="categoryErrors.slug" class="text-sm text-destructive">{{ categoryErrors.slug }}</p>
+            <p v-else class="text-sm text-muted-foreground">
+              The URL-friendly name that will be used in the category URL
+            </p>
+          </div>
+
+          <!-- Description -->
+          <div class="space-y-2">
+            <label for="category-description" class="text-sm font-medium">
+              Description
+            </label>
+            <textarea
+              id="category-description"
+              v-model="newCategory.description"
+              class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Brief description of the category"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Modal Actions -->
+          <div class="flex justify-end gap-4 pt-4">
+            <button
+              type="button"
+              @click="showAddCategoryModal = false"
+              class="px-4 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              :disabled="savingCategory"
+              class="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <span v-if="savingCategory" class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </span>
+              <span v-else>Create Category</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>

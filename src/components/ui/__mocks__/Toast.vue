@@ -1,4 +1,4 @@
-<![CDATA[<script lang="ts">
+<script lang="ts">
 import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue'
 
 export default defineComponent({
@@ -92,4 +92,4 @@ export default defineComponent({
       </svg>
     </button>
   </div>
-</template>]]>
+</template>

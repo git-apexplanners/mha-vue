@@ -29,10 +29,20 @@ export const useProjectsStore = defineStore('projects', () => {
     error.value = ''
 
     try {
-      const response = await axios.get('/api/projects')
-      projects.value = response.data
-      return projects.value
+      // Try to fetch from API
+      try {
+        const response = await axios.get('/api/projects')
+        projects.value = Array.isArray(response.data) ? response.data : []
+        return projects.value
+      } catch (apiErr) {
+        console.warn('API request failed, falling back to static JSON', apiErr)
+        // If API request fails, try to fetch from static JSON file
+        const staticResponse = await axios.get('/api/projects/index.json')
+        projects.value = Array.isArray(staticResponse.data) ? staticResponse.data : []
+        return projects.value
+      }
     } catch (err: any) {
+      console.error('Failed to fetch projects from both API and static JSON', err)
       error.value = err.message || 'Failed to fetch projects'
       return []
     } finally {

@@ -1,13 +1,24 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCategoriesStore } from '../stores/categories'
+import { storeToRefs } from 'pinia'
 
 export function useNavigation() {
   const route = useRoute()
   const categoriesStore = useCategoriesStore()
 
+  // Use storeToRefs to make the categories reactive
+  const { categories } = storeToRefs(categoriesStore)
+
   // Load categories on component mount
-  categoriesStore.fetchCategories()
+  onMounted(() => {
+    categoriesStore.fetchCategories()
+  })
+
+  // Refresh categories when needed
+  const refreshCategories = () => {
+    categoriesStore.fetchCategories()
+  }
 
   // Navigation items with dynamic categories
   const navigationItems = computed(() => {
@@ -98,13 +109,15 @@ export function useNavigation() {
     ]
 
     // Check if categories is an array and has items
-    if (!Array.isArray(categoriesStore.categories) || !categoriesStore.categories.length) {
+    if (!Array.isArray(categories.value) || !categories.value.length) {
+      console.log('Using default categories for navigation')
       return defaultCategories
     }
 
     // Map categories to navigation items
     try {
-      return categoriesStore.categories.map(category => ({
+      console.log('Using dynamic categories for navigation:', categories.value.length)
+      return categories.value.map(category => ({
         name: category.name,
         href: `/portfolio/${category.slug}`
       }))
@@ -141,6 +154,7 @@ export function useNavigation() {
   return {
     navigationItems,
     isActive,
-    isActiveParent
+    isActiveParent,
+    refreshCategories
   }
 }

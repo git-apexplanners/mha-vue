@@ -583,14 +583,14 @@ export default defineConfig({
     // Prevent generating .vue.js files in the source directory
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
         assetFileNames: (assetInfo) => {
-          // Don't hash robots.txt and other root files
-          if (assetInfo.name && /\.(txt|ico|xml|webmanifest)$/.test(assetInfo.name)) {
+          // Don't hash robots.txt, .htaccess and other root files
+          if (assetInfo.name && /\.(txt|ico|xml|webmanifest|htaccess)$/.test(assetInfo.name)) {
             return '[name].[ext]';
           }
-          return 'assets/[name]-[hash].[ext]';
+          return 'assets/[name].[ext]';
         }
       }
     },

@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePagesStore } from '@/stores/pages'
 import { toastService } from '@/composables/useToast'
+import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import type { Page } from '@/stores/pages'
 
 const route = useRoute()
@@ -35,7 +36,7 @@ onMounted(async () => {
     // If editing, load the page
     if (isEditing.value) {
       const page = await pagesStore.fetchPageById(pageId.value)
-      
+
       if (page) {
         formData.value = { ...page }
       } else {
@@ -64,7 +65,7 @@ onMounted(async () => {
 // Generate slug from title
 const generateSlug = () => {
   if (!formData.value.title) return
-  
+
   formData.value.slug = formData.value.title
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
@@ -75,24 +76,24 @@ const generateSlug = () => {
 // Generate meta title from title
 const generateMetaTitle = () => {
   if (!formData.value.title) return
-  
+
   formData.value.meta_title = formData.value.title
 }
 
 // Validate form
 const validateForm = () => {
   const newErrors: Record<string, string> = {}
-  
+
   if (!formData.value.title?.trim()) {
     newErrors.title = 'Title is required'
   }
-  
+
   if (!formData.value.slug?.trim()) {
     newErrors.slug = 'Slug is required'
   } else if (!/^[a-z0-9-]+$/.test(formData.value.slug)) {
     newErrors.slug = 'Slug can only contain lowercase letters, numbers, and hyphens'
   }
-  
+
   errors.value = newErrors
   return Object.keys(newErrors).length === 0
 }
@@ -106,18 +107,18 @@ const savePage = async () => {
     })
     return
   }
-  
+
   saving.value = true
-  
+
   try {
     let result
-    
+
     if (isEditing.value) {
       result = await pagesStore.updatePage(pageId.value, formData.value)
     } else {
       result = await pagesStore.createPage(formData.value)
     }
-    
+
     if (result) {
       toastService.success({
         title: 'Success',
@@ -163,7 +164,7 @@ const cancel = () => {
       <!-- Basic Information -->
       <div class="bg-card rounded-lg p-6 shadow-sm">
         <h2 class="text-xl font-bold mb-4">Basic Information</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <!-- Title -->
           <div class="space-y-2">
@@ -220,15 +221,14 @@ const cancel = () => {
           <label for="content" class="text-sm font-medium">
             Content
           </label>
-          <textarea
+          <RichTextEditor
             id="content"
             v-model="formData.content"
-            class="flex min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Page content (supports HTML)"
-            rows="12"
-          ></textarea>
+            placeholder="Start typing your page content here..."
+            :error="errors.content"
+          />
           <p class="text-sm text-muted-foreground">
-            The content of the page (supports HTML)
+            Use the toolbar above to format your content
           </p>
         </div>
 
@@ -252,7 +252,7 @@ const cancel = () => {
       <!-- SEO Settings -->
       <div class="bg-card rounded-lg p-6 shadow-sm">
         <h2 class="text-xl font-bold mb-4">SEO Settings</h2>
-        
+
         <div class="space-y-6">
           <!-- Meta Title -->
           <div class="space-y-2">

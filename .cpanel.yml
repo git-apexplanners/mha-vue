@@ -25,9 +25,14 @@ deployment:
     # Copy .htaccess file for SPA routing
     - |
       cat > $DEPLOYPATH/.htaccess << 'EOL'
+      # Enable rewriting
       <IfModule mod_rewrite.c>
         RewriteEngine On
         RewriteBase /
+
+        # Redirect to HTTPS
+        RewriteCond %{HTTPS} off
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
         # Don't rewrite files or directories
         RewriteCond %{REQUEST_FILENAME} -f [OR]
@@ -36,16 +41,90 @@ deployment:
 
         # Rewrite everything else to index.html to allow SPA routing
         RewriteRule ^ index.html [L]
-
-        # Properly handle assets with hashed filenames
-        <FilesMatch "\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
-          Header set Cache-Control "max-age=31536000, public"
-        </FilesMatch>
       </IfModule>
 
       # Serve correct MIME types
       <IfModule mod_mime.c>
+        # JavaScript
         AddType application/javascript .js
+        AddType application/javascript .mjs
+
+        # JSON
+        AddType application/json .json
+
+        # CSS
         AddType text/css .css
+
+        # Fonts
+        AddType font/ttf .ttf
+        AddType font/otf .otf
+        AddType font/woff .woff
+        AddType font/woff2 .woff2
+        AddType application/vnd.ms-fontobject .eot
+
+        # Images
+        AddType image/svg+xml .svg
+        AddType image/png .png
+        AddType image/jpeg .jpg .jpeg
+        AddType image/gif .gif
+        AddType image/webp .webp
+
+        # Audio/Video
+        AddType audio/mpeg .mp3
+        AddType video/mp4 .mp4
+        AddType video/webm .webm
       </IfModule>
+
+      # Set proper caching headers
+      <IfModule mod_expires.c>
+        ExpiresActive On
+
+        # Set default expiry
+        ExpiresDefault "access plus 1 month"
+
+        # CSS and JavaScript
+        ExpiresByType text/css "access plus 1 year"
+        ExpiresByType application/javascript "access plus 1 year"
+
+        # Images
+        ExpiresByType image/jpeg "access plus 1 year"
+        ExpiresByType image/png "access plus 1 year"
+        ExpiresByType image/gif "access plus 1 year"
+        ExpiresByType image/svg+xml "access plus 1 year"
+        ExpiresByType image/webp "access plus 1 year"
+
+        # Fonts
+        ExpiresByType font/ttf "access plus 1 year"
+        ExpiresByType font/otf "access plus 1 year"
+        ExpiresByType font/woff "access plus 1 year"
+        ExpiresByType font/woff2 "access plus 1 year"
+        ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+      </IfModule>
+
+      # Add Cache-Control headers
+      <IfModule mod_headers.c>
+        # 1 YEAR
+        <FilesMatch "\.(js|mjs|css|svg|ico|png|jpg|jpeg|gif|webp|woff|woff2|ttf|otf|eot)$">
+          Header set Cache-Control "max-age=31536000, public"
+        </FilesMatch>
+
+        # 1 MONTH for HTML and data files
+        <FilesMatch "\.(html|xml|json)$">
+          Header set Cache-Control "max-age=2592000, public, must-revalidate"
+        </FilesMatch>
+
+        # Disable caching for API requests
+        <FilesMatch "\.(php)$">
+          Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        </FilesMatch>
+      </IfModule>
+
+      # Prevent viewing of .htaccess file
+      <Files .htaccess>
+        Order allow,deny
+        Deny from all
+      </Files>
+
+      # Prevent directory listing
+      Options -Indexes
       EOL

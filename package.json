@@ -19,6 +19,12 @@
     "deploy:prod": "NODE_ENV=production npm run deploy"
   },
   "dependencies": {
+    "@tiptap/extension-image": "^2.11.7",
+    "@tiptap/extension-link": "^2.11.7",
+    "@tiptap/extension-placeholder": "^2.11.7",
+    "@tiptap/pm": "^2.11.7",
+    "@tiptap/starter-kit": "^2.11.7",
+    "@tiptap/vue-3": "^2.11.7",
     "@types/node": "^22.14.1",
     "@vitejs/plugin-vue": "^5.0.4",
     "axios": "^1.8.4",

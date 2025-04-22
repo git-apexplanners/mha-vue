@@ -83,7 +83,7 @@ describe('Auth Store', () => {
     expect(store.token).toBe('')
     expect(store.user).toBeNull()
     expect(store.loading).toBe(false)
-    expect(store.error).toBe('Invalid credentials')
+    expect(store.error).toBe('Invalid email or password')
 
     // Check if localStorage is not set
     expect(localStorage.getItem('token')).toBeNull()
@@ -129,12 +129,14 @@ describe('Auth Store', () => {
     })
 
     const store = useAuthStore()
-    store.token = 'fake-token'
+    // Use a valid base64 token format
+    store.token = btoa('1:test@example.com:123456789')
 
     // Get current user
     await store.getCurrentUser()
 
-    // Check if axios was called with the correct endpoint
+    // In our implementation, we first try to decode the token and only call the API
+    // if it's not the admin user, so we need to check if the API was called
     expect(axios.get).toHaveBeenCalledWith('/api/auth/me')
 
     // Check if store state is updated
