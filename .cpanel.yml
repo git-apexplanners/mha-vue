@@ -1,0 +1,17 @@
+---
+deployment:
+  tasks:
+    # Install dependencies
+    - export DEPLOYPATH=/home/michae12/public_html/
+    - export NODE_VERSION=16
+    - source ~/.nvm/nvm.sh
+    - nvm use $NODE_VERSION
+    - npm ci
+
+    # Build the application
+    - npm run build
+
+    # Deploy to public_html
+    - rm -rf $DEPLOYPATH/*
+    - cp -R build/* $DEPLOYPATH/
+    - cp public/.htaccess $DEPLOYPATH/
