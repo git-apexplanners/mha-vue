@@ -1,4 +1,5 @@
 ---
+# cPanel deployment configuration for michaelhartarchitects.co.za
 deployment:
   tasks:
     # Install dependencies
