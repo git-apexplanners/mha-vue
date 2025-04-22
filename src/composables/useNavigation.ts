@@ -82,7 +82,9 @@ export function useNavigation() {
       route = vueRoute
     }
   } catch (error) {
-    console.warn('Vue Router not available, using fallback route')
+    if (import.meta.env.DEV) {
+      console.warn('Vue Router not available, using fallback route')
+    }
   }
 
   // Check if a route is active
@@ -91,7 +93,9 @@ export function useNavigation() {
     try {
       return route?.path === href || route?.path?.startsWith(`${href}/`)
     } catch (error) {
-      console.warn('Error checking active route:', error)
+      if (import.meta.env.DEV) {
+        console.warn('Error checking active route:', error)
+      }
       return false
     }
   }
@@ -107,7 +111,9 @@ export function useNavigation() {
       }
       return false
     } catch (error) {
-      console.warn('Error checking active parent route:', error)
+      if (import.meta.env.DEV) {
+        console.warn('Error checking active parent route:', error)
+      }
       return false
     }
   }

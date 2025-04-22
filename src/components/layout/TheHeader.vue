@@ -1,16 +1,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 export default defineComponent({
   name: 'TheHeader',
   data() {
     return {
       isMenuOpen: false,
-      // Mock auth store for build
-      authStore: {
-        isAuthenticated: () => false,
-        logout: () => {}
-      }
+      authStore: useAuthStore()
     }
   },
   computed: {
