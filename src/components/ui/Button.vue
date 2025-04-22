@@ -6,7 +6,7 @@ const props = defineProps({
     type: String,
     default: 'default',
     validator: (value: string) => {
-      return ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'].includes(value)
+      return ['default', 'primary', 'secondary', 'destructive', 'outline', 'ghost', 'link'].includes(value)
     }
   },
   size: {
@@ -15,14 +15,6 @@ const props = defineProps({
     validator: (value: string) => {
       return ['default', 'sm', 'lg', 'icon'].includes(value)
     }
-  },
-  disabled: {
-    type: Boolean,
-    default: false
-  },
-  type: {
-    type: String as () => 'button' | 'submit' | 'reset',
-    default: 'button'
   },
   asChild: {
     type: Boolean,
@@ -33,51 +25,37 @@ const props = defineProps({
 const emit = defineEmits(['click'])
 
 const buttonClasses = computed(() => {
+  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background'
+  
   const variantClasses = {
     default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-    outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+    primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
     secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+    outline: 'border border-input hover:bg-accent hover:text-accent-foreground',
     ghost: 'hover:bg-accent hover:text-accent-foreground',
-    link: 'text-primary underline-offset-4 hover:underline'
+    link: 'underline-offset-4 hover:underline text-primary'
   }
-
+  
   const sizeClasses = {
-    default: 'h-10 px-4 py-2',
-    sm: 'h-9 rounded-md px-3',
-    lg: 'h-11 rounded-md px-8',
+    default: 'h-10 py-2 px-4',
+    sm: 'h-9 px-3 rounded-md',
+    lg: 'h-11 px-8 rounded-md',
     icon: 'h-10 w-10'
   }
-
-  return [
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
-    variantClasses[props.variant as keyof typeof variantClasses],
-    sizeClasses[props.size as keyof typeof sizeClasses]
-  ].join(' ')
+  
+  return `${baseClasses} ${variantClasses[props.variant]} ${sizeClasses[props.size]}`
 })
 
 const handleClick = (event: MouseEvent) => {
-  if (!props.disabled) {
-    emit('click', event)
-  }
+  emit('click', event)
 }
 </script>
 
 <template>
-  <button
-    v-if="!asChild"
-    :type="type"
-    :class="buttonClasses"
-    :disabled="disabled"
-    @click="handleClick"
-  >
-    <slot></slot>
-  </button>
   <component
-    v-else
-    :is="'div'"
+    :is="asChild ? 'slot' : 'button'"
     :class="buttonClasses"
-    :disabled="disabled"
     @click="handleClick"
   >
     <slot></slot>

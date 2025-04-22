@@ -6,6 +6,7 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.VITE_BASE_URL || '/',
   plugins: [
     vue(),
     {
@@ -15,6 +16,7 @@ export default defineConfig({
           // Parse the URL to get the endpoint
           const url = new URL(req.url || '', `http://${req.headers.host}`);
           const endpoint = url.pathname.split('/').filter(Boolean)[0]; // Get the first part after /api/
+          console.log('API Request:', { url: req.url, method: req.method, endpoint });
 
           // Set response headers
           res.setHeader('Content-Type', 'application/json');
@@ -290,6 +292,96 @@ export default defineConfig({
               res.end(JSON.stringify({ error: 'Method not allowed' }));
               return;
             }
+          } else if (endpoint === 'auth') {
+            // Handle auth endpoints
+            if (req.method === 'POST' && url.pathname === '/api/auth/login') {
+              let body = '';
+              req.on('data', (chunk) => {
+                body += chunk.toString();
+              });
+
+              req.on('end', () => {
+                try {
+                  const { email, password } = JSON.parse(body);
+                  const usersPath = path.resolve(__dirname, 'src/data/users.json');
+                  const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
+
+                  // Find user by email and password
+                  const user = usersData.find((u: any) =>
+                    u.email === email && u.password === password
+                  );
+
+                  if (user) {
+                    // Create a simple token (in a real app, this would be a JWT)
+                    const token = Buffer.from(`${user.id}:${user.email}:${Date.now()}`).toString('base64');
+
+                    // Return user data without password
+                    const { password, ...userWithoutPassword } = user;
+
+                    res.statusCode = 200;
+                    res.end(JSON.stringify({
+                      token,
+                      user: userWithoutPassword
+                    }));
+                  } else {
+                    res.statusCode = 401;
+                    res.end(JSON.stringify({ error: 'Invalid email or password' }));
+                  }
+                } catch (error) {
+                  res.statusCode = 400;
+                  res.end(JSON.stringify({ error: 'Invalid request body' }));
+                }
+              });
+
+              // Return early to prevent the default response
+              return;
+            } else if (req.method === 'GET' && url.pathname === '/api/auth/me') {
+              // Get the authorization header
+              const authHeader = req.headers.authorization;
+
+              if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                res.statusCode = 401;
+                res.end(JSON.stringify({ error: 'Unauthorized' }));
+                return;
+              }
+
+              // Extract the token
+              const token = authHeader.split(' ')[1];
+
+              try {
+                // Decode the token (in a real app, this would verify a JWT)
+                const decoded = Buffer.from(token, 'base64').toString();
+                const [userId] = decoded.split(':');
+
+                // Get the user data
+                const usersPath = path.resolve(__dirname, 'src/data/users.json');
+                const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
+
+                // Find user by ID
+                const user = usersData.find((u: any) => u.id === userId);
+
+                if (user) {
+                  // Return user data without password
+                  const { password, ...userWithoutPassword } = user;
+
+                  res.statusCode = 200;
+                  res.end(JSON.stringify(userWithoutPassword));
+                } else {
+                  res.statusCode = 401;
+                  res.end(JSON.stringify({ error: 'Invalid token' }));
+                }
+              } catch (error) {
+                res.statusCode = 401;
+                res.end(JSON.stringify({ error: 'Invalid token' }));
+              }
+
+              // Return early to prevent the default response
+              return;
+            } else {
+              res.statusCode = 404;
+              res.end(JSON.stringify({ error: 'Auth endpoint not found' }));
+              return;
+            }
           } else if (endpoint === 'pages') {
             const pagesPath = path.resolve(__dirname, 'src/data/pages.json');
             const pagesData = JSON.parse(fs.readFileSync(pagesPath, 'utf-8'));
@@ -485,7 +577,7 @@ export default defineConfig({
     dedupe: ['vue']
   },
   build: {
-    outDir: 'build',
+    outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
     // Prevent generating .vue.js files in the source directory
@@ -493,8 +585,19 @@ export default defineConfig({
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        assetFileNames: (assetInfo) => {
+          // Don't hash robots.txt and other root files
+          if (assetInfo.name && /\.(txt|ico|xml|webmanifest)$/.test(assetInfo.name)) {
+            return '[name].[ext]';
+          }
+          return 'assets/[name]-[hash].[ext]';
+        }
       }
+    },
+    // Better handle CommonJS modules
+    commonjsOptions: {
+      transformMixedEsModules: true,
+      include: [/node_modules/]
     }
   },
   server: {

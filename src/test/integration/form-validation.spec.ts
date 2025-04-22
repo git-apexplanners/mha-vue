@@ -1,8 +1,24 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
-import Button from '@/components/ui/__mocks__/Button.vue'
-import Label from '@/components/ui/__mocks__/Label.vue'
+
+// Create simple mock components
+const Button = defineComponent({
+  name: 'Button',
+  props: {
+    type: String,
+    disabled: Boolean
+  },
+  template: `<button :type="type || 'button'" :disabled="disabled"><slot></slot></button>`
+})
+
+const Label = defineComponent({
+  name: 'Label',
+  props: {
+    htmlFor: String
+  },
+  template: `<label :for="htmlFor"><slot></slot></label>`
+})
 
 // Create a mock form component for testing
 const LoginForm = defineComponent({
@@ -19,62 +35,62 @@ const LoginForm = defineComponent({
     })
     const isSubmitting = ref(false)
     const isSuccess = ref(false)
-    
+
     const validateEmail = () => {
       if (!email.value) {
         errors.value.email = 'Email is required'
         return false
       }
-      
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(email.value)) {
         errors.value.email = 'Invalid email format'
         return false
       }
-      
+
       errors.value.email = ''
       return true
     }
-    
+
     const validatePassword = () => {
       if (!password.value) {
         errors.value.password = 'Password is required'
         return false
       }
-      
+
       if (password.value.length < 6) {
         errors.value.password = 'Password must be at least 6 characters'
         return false
       }
-      
+
       errors.value.password = ''
       return true
     }
-    
+
     const handleSubmit = async (e) => {
       e.preventDefault()
-      
+
       // Reset errors
       errors.value = {
         email: '',
         password: ''
       }
-      
+
       // Validate form
       const isEmailValid = validateEmail()
       const isPasswordValid = validatePassword()
-      
+
       if (!isEmailValid || !isPasswordValid) {
         return
       }
-      
+
       // Submit form
       isSubmitting.value = true
-      
+
       try {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 500))
-        
+
         // Success
         isSuccess.value = true
       } catch (error) {
@@ -84,7 +100,7 @@ const LoginForm = defineComponent({
         isSubmitting.value = false
       }
     }
-    
+
     return {
       email,
       password,
@@ -110,7 +126,7 @@ const LoginForm = defineComponent({
         />
         <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
       </div>
-      
+
       <div>
         <Label htmlFor="password">Password</Label>
         <input
@@ -123,11 +139,11 @@ const LoginForm = defineComponent({
         />
         <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
       </div>
-      
+
       <Button type="submit" :disabled="isSubmitting">
         {{ isSubmitting ? 'Logging in...' : 'Login' }}
       </Button>
-      
+
       <p v-if="isSuccess" class="text-green-500">Login successful!</p>
     </form>
   `
@@ -136,52 +152,52 @@ const LoginForm = defineComponent({
 describe('Form Validation Integration', () => {
   it('validates email format', async () => {
     const wrapper = mount(LoginForm)
-    
+
     // Get the email input
     const emailInput = wrapper.find('input[type="email"]')
-    
+
     // Enter invalid email
     await emailInput.setValue('invalid-email')
     await emailInput.trigger('blur')
-    
+
     // Should show error message
     expect(wrapper.text()).toContain('Invalid email format')
-    
+
     // Enter valid email
     await emailInput.setValue('test@example.com')
     await emailInput.trigger('blur')
-    
+
     // Error should be cleared
     expect(wrapper.text()).not.toContain('Invalid email format')
   })
 
   it('validates password length', async () => {
     const wrapper = mount(LoginForm)
-    
+
     // Get the password input
     const passwordInput = wrapper.find('input[type="password"]')
-    
+
     // Enter short password
     await passwordInput.setValue('12345')
     await passwordInput.trigger('blur')
-    
+
     // Should show error message
     expect(wrapper.text()).toContain('Password must be at least 6 characters')
-    
+
     // Enter valid password
     await passwordInput.setValue('123456')
     await passwordInput.trigger('blur')
-    
+
     // Error should be cleared
     expect(wrapper.text()).not.toContain('Password must be at least 6 characters')
   })
 
   it('validates required fields on submit', async () => {
     const wrapper = mount(LoginForm)
-    
+
     // Submit form without filling fields
     await wrapper.find('form').trigger('submit')
-    
+
     // Should show both error messages
     expect(wrapper.text()).toContain('Email is required')
     expect(wrapper.text()).toContain('Password is required')
@@ -189,17 +205,17 @@ describe('Form Validation Integration', () => {
 
   it('submits form with valid data', async () => {
     const wrapper = mount(LoginForm)
-    
+
     // Fill form with valid data
     await wrapper.find('input[type="email"]').setValue('test@example.com')
     await wrapper.find('input[type="password"]').setValue('password123')
-    
+
     // Submit form
     await wrapper.find('form').trigger('submit')
-    
+
     // Wait for "API call" to complete
     await new Promise(resolve => setTimeout(resolve, 600))
-    
+
     // Should show success message
     expect(wrapper.text()).toContain('Login successful!')
   })

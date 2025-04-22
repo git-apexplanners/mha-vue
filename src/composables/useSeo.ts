@@ -19,11 +19,11 @@ export function useSeo(options: MetaOptions = {}) {
   const route = useRoute()
   const title = ref(options.title || 'Michael Hart Architects')
   const description = ref(
-    options.description || 
+    options.description ||
     'Michael Hart Architects is a leading architectural firm with over 33 years of experience in residential, commercial, and urban design.'
   )
   const keywords = ref(
-    options.keywords || 
+    options.keywords ||
     'architecture, design, residential, commercial, urban planning, interior design'
   )
   const ogTitle = ref(options.ogTitle || title.value)
@@ -35,31 +35,7 @@ export function useSeo(options: MetaOptions = {}) {
   const twitterDescription = ref(options.twitterDescription || description.value)
   const twitterImage = ref(options.twitterImage || ogImage.value)
 
-  // Update meta tags when values change
-  watch([
-    title, 
-    description, 
-    keywords, 
-    ogTitle, 
-    ogDescription, 
-    ogImage, 
-    ogUrl, 
-    twitterCard, 
-    twitterTitle, 
-    twitterDescription, 
-    twitterImage
-  ], () => {
-    updateMetaTags()
-  })
-
-  // Update meta tags when route changes
-  watch(() => route.path, () => {
-    if (!ogUrl.value) {
-      ogUrl.value = window.location.origin + route.path
-    }
-    updateMetaTags()
-  }, { immediate: true })
-
+  // Define updateMetaTags function before using it in watch callbacks
   const updateMetaTags = () => {
     // Update document title
     document.title = title.value
@@ -103,6 +79,31 @@ export function useSeo(options: MetaOptions = {}) {
     updateMetaTag('twitter:description', twitterDescription.value)
     updateMetaTag('twitter:image', twitterImage.value)
   }
+
+  // Update meta tags when values change
+  watch([
+    title,
+    description,
+    keywords,
+    ogTitle,
+    ogDescription,
+    ogImage,
+    ogUrl,
+    twitterCard,
+    twitterTitle,
+    twitterDescription,
+    twitterImage
+  ], () => {
+    updateMetaTags()
+  })
+
+  // Update meta tags when route changes
+  watch(() => route.path, () => {
+    if (!ogUrl.value) {
+      ogUrl.value = window.location.origin + route.path
+    }
+    updateMetaTags()
+  }, { immediate: true })
 
   return {
     title,

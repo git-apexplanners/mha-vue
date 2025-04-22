@@ -2,17 +2,50 @@
 # cPanel deployment configuration for michaelhartarchitects.co.za
 deployment:
   tasks:
-    # Install dependencies
+    # Set deployment path and Node version
     - export DEPLOYPATH=/home/michae12/public_html/
-    - export NODE_VERSION=16
+    - export NODE_VERSION=18
     - source ~/.nvm/nvm.sh
     - nvm use $NODE_VERSION
+
+    # Install dependencies
     - npm ci
 
-    # Build the application
-    - npm run build
+    # Build the application with proper base URL
+    - export BASE_URL="/"
+    - VITE_BASE_URL=$BASE_URL npm run build
 
     # Deploy to public_html
     - rm -rf $DEPLOYPATH/*
-    - cp -R build/* $DEPLOYPATH/
-    - cp public/.htaccess $DEPLOYPATH/
+    - cp -R dist/* $DEPLOYPATH/
+
+    # Ensure robots.txt is in the root directory
+    - cp -f dist/robots.txt $DEPLOYPATH/
+
+    # Copy .htaccess file for SPA routing
+    - |
+      cat > $DEPLOYPATH/.htaccess << 'EOL'
+      <IfModule mod_rewrite.c>
+        RewriteEngine On
+        RewriteBase /
+
+        # Don't rewrite files or directories
+        RewriteCond %{REQUEST_FILENAME} -f [OR]
+        RewriteCond %{REQUEST_FILENAME} -d
+        RewriteRule ^ - [L]
+
+        # Rewrite everything else to index.html to allow SPA routing
+        RewriteRule ^ index.html [L]
+
+        # Properly handle assets with hashed filenames
+        <FilesMatch "\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+          Header set Cache-Control "max-age=31536000, public"
+        </FilesMatch>
+      </IfModule>
+
+      # Serve correct MIME types
+      <IfModule mod_mime.c>
+        AddType application/javascript .js
+        AddType text/css .css
+      </IfModule>
+      EOL

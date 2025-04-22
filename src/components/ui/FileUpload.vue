@@ -1,4 +1,4 @@
-<![CDATA[<script lang="ts">
+<script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 
@@ -236,4 +236,4 @@ export default defineComponent({
       </button>
     </div>
   </div>
-</template>]]>
+</template>

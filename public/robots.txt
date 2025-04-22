@@ -1,0 +1,35 @@
+# Disallow all search engines from indexing the site
+User-agent: *
+Disallow: /
+
+# Specifically block Google
+User-agent: Googlebot
+Disallow: /
+
+# Block Google Image
+User-agent: Googlebot-Image
+Disallow: /
+
+# Block Bing
+User-agent: Bingbot
+Disallow: /
+
+# Block Yahoo
+User-agent: Slurp
+Disallow: /
+
+# Block Baidu
+User-agent: Baiduspider
+Disallow: /
+
+# Block DuckDuckGo
+User-agent: DuckDuckBot
+Disallow: /
+
+# Block Yandex
+User-agent: Yandex
+Disallow: /
+
+# Block all other bots
+User-agent: *
+Noindex: /

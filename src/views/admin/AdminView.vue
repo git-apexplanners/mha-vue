@@ -1,68 +1,56 @@
-<script>
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { useCategoriesStore } from '@/stores/categories'
 
-export default {
-  name: 'AdminView',
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
-    const projectsStore = useProjectsStore()
-    const categoriesStore = useCategoriesStore()
+const router = useRouter()
+const authStore = useAuthStore()
+const projectsStore = useProjectsStore()
+const categoriesStore = useCategoriesStore()
 
-    const loading = ref(true)
-    const stats = ref({
-      totalProjects: 0,
-      publishedProjects: 0,
-      draftProjects: 0,
-      categories: 0
-    })
+const loading = ref(true)
+const stats = ref({
+  totalProjects: 0,
+  publishedProjects: 0,
+  draftProjects: 0,
+  categories: 0
+})
 
-    onMounted(async () => {
-      // Check if user is authenticated
-      if (!authStore.isAuthenticated()) {
-        router.push('/login')
-        return
-      }
-
-      try {
-        // Fetch data for dashboard
-        const [projects, categories] = await Promise.all([
-          projectsStore.fetchProjects(),
-          categoriesStore.fetchCategories()
-        ])
-
-        // Ensure projects and categories are arrays
-        const projectsArray = Array.isArray(projects) ? projects : []
-        const categoriesArray = Array.isArray(categories) ? categories : []
-
-        // Calculate stats
-        stats.value = {
-          totalProjects: projectsArray.length,
-          publishedProjects: projectsArray.filter(project => project.published).length,
-          draftProjects: projectsArray.filter(project => !project.published).length,
-          categories: categoriesArray.length
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error)
-      } finally {
-        loading.value = false
-      }
-    })
-
-    return {
-      loading,
-      stats,
-      projectsStore,
-      categoriesStore,
-      router,
-      authStore
-    }
+onMounted(async () => {
+  // Check if user is authenticated
+  if (!authStore.isAuthenticated()) {
+    router.push('/login')
+    return
   }
-}
+
+  try {
+    // Fetch data for dashboard
+    const [projects, categories] = await Promise.all([
+      projectsStore.fetchProjects(),
+      categoriesStore.fetchCategories()
+    ])
+
+    // Ensure projects and categories are arrays
+    const projectsArray = Array.isArray(projects) ? projects : []
+    const categoriesArray = Array.isArray(categories) ? categories : []
+
+    // Calculate stats
+    stats.value = {
+      totalProjects: projectsArray.length,
+      publishedProjects: projectsArray.filter(project => project.published).length,
+      draftProjects: projectsArray.filter(project => !project.published).length,
+      categories: categoriesArray.length
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error)
+  } finally {
+    loading.value = false
+  }
+})
+
+
 </script>
 
 <template>

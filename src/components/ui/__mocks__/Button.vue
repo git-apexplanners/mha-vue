@@ -1,4 +1,4 @@
-<![CDATA[<script lang="ts">
+<script lang="ts">
 import { defineComponent } from 'vue'
 
 export default defineComponent({
@@ -13,6 +13,14 @@ export default defineComponent({
       default: 'default'
     },
     asChild: {
+      type: Boolean,
+      default: false
+    },
+    type: {
+      type: String,
+      default: 'button'
+    },
+    disabled: {
       type: Boolean,
       default: false
     }
@@ -46,10 +54,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <button v-if="!asChild" :class="classes">
+  <button v-if="!asChild" :class="classes" :type="type" :disabled="disabled">
     <slot></slot>
   </button>
   <div v-else :class="classes">
     <slot></slot>
   </div>
-</template>]]>
+</template>

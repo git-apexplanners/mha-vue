@@ -1,4 +1,4 @@
-<![CDATA[<script lang="ts">
+<script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue'
 
 export default defineComponent({
@@ -71,13 +71,9 @@ export default defineComponent({
       :alt="alt"
       :width="width"
       :height="height"
-      :class="[
-        'transition-opacity duration-300',
-        isLoaded ? 'opacity-0' : 'opacity-100',
-        class
-      ]"
+      :class="'transition-opacity duration-300 ' + (isLoaded ? 'opacity-0' : 'opacity-100') + ' ' + class"
     />
-    
+
     <!-- Actual image -->
     <img
       :src="src"
@@ -87,11 +83,7 @@ export default defineComponent({
       :loading="loading"
       @load="handleLoad"
       @error="handleError"
-      :class="[
-        'absolute top-0 left-0 transition-opacity duration-300',
-        isLoaded && !isError ? 'opacity-100' : 'opacity-0',
-        class
-      ]"
+      :class="'absolute top-0 left-0 transition-opacity duration-300 ' + (isLoaded && !isError ? 'opacity-100' : 'opacity-0') + ' ' + class"
     />
   </div>
-</template>]]>
+</template>

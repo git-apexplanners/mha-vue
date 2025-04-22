@@ -22,7 +22,7 @@ const config = {
   password: process.env.FTP_PASSWORD || '',
   secure: process.env.FTP_SECURE === 'true',
   remoteDir: process.env.FTP_REMOTE_DIR || '/public_html',
-  localDir: path.resolve(__dirname, '../build')
+  localDir: path.resolve(__dirname, '../dist')
 }
 
 // Validate configuration
@@ -54,7 +54,7 @@ const deploy = async () => {
 
   // Check if build directory exists
   if (!fs.existsSync(config.localDir)) {
-    console.error(chalk.red('Error: build directory not found. Run "npm run build" first.'))
+    console.error(chalk.red('Error: dist directory not found. Run "npm run build" first.'))
     process.exit(1)
   }
 

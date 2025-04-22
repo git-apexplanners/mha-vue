@@ -1,4 +1,4 @@
-<![CDATA[<script lang="ts">
+<script lang="ts">
 import { defineComponent } from 'vue'
 
 export default defineComponent({
@@ -28,4 +28,4 @@ export default defineComponent({
     <slot></slot>
     <span v-if="required" class="text-destructive ml-1">*</span>
   </label>
-</template>]]>
+</template>
