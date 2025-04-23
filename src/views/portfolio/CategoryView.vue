@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import { useCategoriesStore } from '@/stores/categories'
@@ -28,8 +28,11 @@ const category = computed(() => {
 // Get projects for this category
 const categoryProjects = ref([])
 
-// Load data
-onMounted(async () => {
+// Function to load projects for a category
+async function loadProjectsForCategory() {
+  loading.value = true
+  error.value = ''
+
   try {
     // Load categories if not already loaded
     if (!Array.isArray(categoriesStore.categories) || categoriesStore.categories.length === 0) {
@@ -55,7 +58,13 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+// Load data on mount
+onMounted(loadProjectsForCategory)
+
+// Watch for changes in the route or category
+watch([() => route.params.slug, () => categoriesStore.categories], loadProjectsForCategory)
 </script>
 
 <template>

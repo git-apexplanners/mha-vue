@@ -1,18 +1,24 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCategoriesStore } from '../stores/categories'
+import { useNavigationStore } from '../stores/navigation'
 import { storeToRefs } from 'pinia'
 
 export function useNavigation() {
   const route = useRoute()
   const categoriesStore = useCategoriesStore()
+  const navigationStore = useNavigationStore()
 
-  // Use storeToRefs to make the categories reactive
+  // Use storeToRefs to make the categories and navigation items reactive
   const { categories } = storeToRefs(categoriesStore)
+  const { navigationItems: storeNavigationItems } = storeToRefs(navigationStore)
 
-  // Load categories on component mount
-  onMounted(() => {
-    categoriesStore.fetchCategories()
+  // Load categories and navigation on component mount
+  onMounted(async () => {
+    await Promise.all([
+      categoriesStore.fetchCategories(),
+      navigationStore.fetchNavigationItems()
+    ])
   })
 
   // Refresh categories when needed
@@ -22,6 +28,20 @@ export function useNavigation() {
 
   // Navigation items with dynamic categories
   const navigationItems = computed(() => {
+    // If we have navigation items from the store, use those
+    if (storeNavigationItems.value && storeNavigationItems.value.length > 0) {
+      // Find the Portfolio item and update its children with dynamic categories
+      const items = JSON.parse(JSON.stringify(storeNavigationItems.value))
+      const portfolioItem = items.find(item => item.name === 'Portfolio')
+
+      if (portfolioItem) {
+        portfolioItem.children = getPortfolioItems()
+      }
+
+      return items
+    }
+
+    // Fallback to default navigation items
     const items = [
       {
         name: 'Home',
@@ -32,11 +52,6 @@ export function useNavigation() {
         name: 'About',
         href: '/about',
         icon: 'info'
-      },
-      {
-        name: 'Team',
-        href: '/team',
-        icon: 'user'
       },
       {
         name: 'Services',
@@ -155,6 +170,7 @@ export function useNavigation() {
     navigationItems,
     isActive,
     isActiveParent,
-    refreshCategories
+    refreshCategories,
+    refreshNavigation: navigationStore.fetchNavigationItems
   }
 }

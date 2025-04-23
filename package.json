@@ -14,7 +14,9 @@
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
     "generate-sitemap": "node scripts/generate-sitemap.js",
+    "generate-favicon": "node scripts/generate-favicon.js",
     "prebuild": "npm run clean && npm run lint && npm run generate-sitemap",
+    "postbuild": "npm run generate-favicon",
     "deploy": "npm run build && node scripts/deploy-cpanel.js",
     "deploy:prod": "NODE_ENV=production npm run deploy"
   },
@@ -27,6 +29,7 @@
     "@tiptap/vue-3": "^2.11.7",
     "@types/node": "^22.14.1",
     "@vitejs/plugin-vue": "^5.0.4",
+    "@vueuse/core": "^13.1.0",
     "axios": "^1.8.4",
     "pinia": "^3.0.2",
     "vue": "^3.5.13",

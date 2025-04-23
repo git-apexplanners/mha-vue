@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCategoriesStore } from '@/stores/categories'
 import { toastService } from '@/composables/useToast'
 import type { Category } from '@/stores/categories'
 
 const categoriesStore = useCategoriesStore()
+const route = useRoute()
 
 // State
 const loading = ref(true)
@@ -26,6 +28,11 @@ const formData = ref({
 onMounted(async () => {
   try {
     await categoriesStore.fetchCategories()
+
+    // Check if we should open the create modal based on query parameter
+    if (route.query.action === 'create') {
+      openCreateModal()
+    }
   } catch (error) {
     console.error('Error fetching categories:', error)
     toastService.error({
@@ -34,6 +41,13 @@ onMounted(async () => {
     })
   } finally {
     loading.value = false
+  }
+})
+
+// Watch for route query changes
+watch(() => route.query, (newQuery) => {
+  if (newQuery.action === 'create') {
+    openCreateModal()
   }
 })
 

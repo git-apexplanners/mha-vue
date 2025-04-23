@@ -1,0 +1,32 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Allow PHP files to be executed
+<FilesMatch "\.php$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+
+# Set proper MIME types
+<IfModule mod_mime.c>
+    AddType application/json .json
+</IfModule>
+
+# Set proper headers for JSON files
+<FilesMatch "\.json$">
+    Header set Content-Type "application/json"
+    Header set Access-Control-Allow-Origin "*"
+</FilesMatch>
+
+# Ensure directories can be accessed
+Options +Indexes +FollowSymLinks
+
+# Protect navigation.json from direct access
+<Files "navigation.json">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Allow cross-origin requests
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type"

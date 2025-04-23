@@ -69,6 +69,21 @@ const router = createRouter({
       meta: { layout: 'default', requiresAuth: true }
     },
     {
+      path: '/admin/categories/new',
+      name: 'admin-category-new',
+      redirect: to => ({
+        path: '/admin/categories',
+        query: { action: 'create' }
+      }),
+      meta: { layout: 'default', requiresAuth: true }
+    },
+    {
+      path: '/admin/navigation',
+      name: 'admin-navigation',
+      component: () => import('../views/admin/NavigationEditorView.vue'),
+      meta: { layout: 'default', requiresAuth: true }
+    },
+    {
       path: '/admin/pages',
       name: 'admin-pages',
       component: () => import('../views/admin/PagesView.vue'),
@@ -262,13 +277,7 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'), // Temporarily using AboutView
       meta: { layout: 'default' }
     },
-    // Team page
-    {
-      path: '/team',
-      name: 'team',
-      component: () => import('../views/AboutView.vue'), // Temporarily using AboutView
-      meta: { layout: 'default' }
-    },
+
     // Portfolio category pages
     {
       path: '/portfolio/residential',
@@ -281,6 +290,12 @@ const router = createRouter({
       name: 'portfolio-commercial',
       component: () => import('../views/portfolio/CategoryView.vue'),
       meta: { layout: 'default', categorySlug: 'commercial' }
+    },
+    {
+      path: '/portfolio/:slug',
+      name: 'portfolio-category',
+      component: () => import('../views/portfolio/CategoryView.vue'),
+      meta: { layout: 'default' }
     }
   ]
 })

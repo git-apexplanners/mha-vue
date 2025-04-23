@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { usePagesStore } from '@/stores/pages'
 import { toastService } from '@/composables/useToast'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
+import AddToNavigationModal from '@/components/admin/navigation/AddToNavigationModal.vue'
 import type { Page } from '@/stores/pages'
 
 const route = useRoute()
@@ -18,6 +19,8 @@ const pageId = computed(() => route.params.id as string)
 const loading = ref(true)
 const saving = ref(false)
 const errors = ref<Record<string, string>>({})
+const showAddToNavigationModal = ref(false)
+const pageCreated = ref(false)
 
 // Form data
 const formData = ref<Partial<Page>>({
@@ -124,7 +127,15 @@ const savePage = async () => {
         title: 'Success',
         description: `Page ${isEditing.value ? 'updated' : 'created'} successfully`
       })
-      router.push('/admin/pages')
+
+      if (!isEditing.value) {
+        // For new pages, show the option to add to navigation
+        pageCreated.value = true
+        showAddToNavigationModal.value = true
+      } else {
+        // For existing pages, just go back to the pages list
+        router.push('/admin/pages')
+      }
     } else {
       throw new Error(`Failed to ${isEditing.value ? 'update' : 'create'} page`)
     }
@@ -142,6 +153,19 @@ const savePage = async () => {
 // Cancel and go back
 const cancel = () => {
   router.push('/admin/pages')
+}
+
+// Close the add to navigation modal
+const closeAddToNavigationModal = () => {
+  showAddToNavigationModal.value = false
+  if (pageCreated.value) {
+    router.push('/admin/pages')
+  }
+}
+
+// Handle after page is added to navigation
+const handlePageAddedToNavigation = () => {
+  pageCreated.value = false
 }
 </script>
 
@@ -300,7 +324,18 @@ const cancel = () => {
       </div>
 
       <!-- Form Actions -->
-      <div class="flex justify-end gap-4">
+      <div class="flex justify-between gap-4">
+        <div>
+          <!-- Only show for existing pages -->
+          <button
+            v-if="isEditing && formData.slug"
+            type="button"
+            class="px-4 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+            @click="showAddToNavigationModal = true"
+          >
+            Add to Navigation Menu
+          </button>
+        </div>
         <button
           type="button"
           @click="cancel"
@@ -324,5 +359,15 @@ const cancel = () => {
         </button>
       </div>
     </form>
+
+    <!-- Add to Navigation Modal -->
+    <AddToNavigationModal
+      v-if="pageCreated"
+      :is-open="showAddToNavigationModal"
+      :page-name="formData.title || ''"
+      :page-slug="formData.slug || ''"
+      @close="closeAddToNavigationModal"
+      @added="handlePageAddedToNavigation"
+    />
   </div>
 </template>

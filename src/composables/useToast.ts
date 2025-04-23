@@ -29,15 +29,15 @@ export function useToast() {
       type: options.type || 'default',
       duration: options.duration || 5000
     }
-    
+
     toasts.set(id, newToast)
-    
+
     if (newToast.duration > 0) {
       setTimeout(() => {
         dismiss(id)
       }, newToast.duration)
     }
-    
+
     return id
   }
 
@@ -55,10 +55,14 @@ export function useToast() {
     dismiss,
     dismissAll,
     // Convenience methods
-    success: (options: Omit<Parameters<typeof toast>[0], 'type'>) => 
+    success: (options: Omit<Parameters<typeof toast>[0], 'type'>) =>
       toast({ ...options, type: 'success' }),
-    error: (options: Omit<Parameters<typeof toast>[0], 'type'>) => 
+    error: (options: Omit<Parameters<typeof toast>[0], 'type'>) =>
       toast({ ...options, type: 'destructive' }),
+    warning: (options: Omit<Parameters<typeof toast>[0], 'type'>) =>
+      toast({ ...options, type: 'default', duration: 7000 }),
+    info: (options: Omit<Parameters<typeof toast>[0], 'type'>) =>
+      toast({ ...options, type: 'default' }),
   }
 }
 

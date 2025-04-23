@@ -1,12 +1,17 @@
 <script>
 import { useNavigation } from '../../composables/useNavigation'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 export default {
   name: 'TheSidebar',
   setup() {
     // Get navigation items and helper functions
-    const { navigationItems, isActive, isActiveParent } = useNavigation()
+    const { navigationItems, isActive, isActiveParent, refreshNavigation } = useNavigation()
+
+    // Refresh navigation when component is mounted
+    onMounted(() => {
+      refreshNavigation()
+    })
 
     // Sidebar state - collapsed by default, expands on hover
     const isExpanded = ref(false)

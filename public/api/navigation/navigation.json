@@ -1,0 +1,102 @@
+[
+  {
+    "id": "1",
+    "name": "Home",
+    "href": "/",
+    "icon": "home",
+    "order": 1
+  },
+  {
+    "id": "2",
+    "name": "About",
+    "href": "/about",
+    "icon": "info",
+    "order": 2
+  },
+  {
+    "id": "3",
+    "name": "Services",
+    "icon": "building",
+    "order": 3,
+    "children": [
+      {
+        "id": "3-1",
+        "name": "Residential",
+        "href": "/services/residential",
+        "parent_id": "3",
+        "order": 1
+      },
+      {
+        "id": "3-2",
+        "name": "Commercial",
+        "href": "/services/commercial",
+        "parent_id": "3",
+        "order": 2
+      },
+      {
+        "id": "3-3",
+        "name": "Urban Design",
+        "href": "/services/urban",
+        "parent_id": "3",
+        "order": 3
+      },
+      {
+        "id": "3-4",
+        "name": "Interior Design",
+        "href": "/services/interior",
+        "parent_id": "3",
+        "order": 4
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Portfolio",
+    "icon": "folder",
+    "order": 4,
+    "children": [
+      {
+        "id": "4-1",
+        "name": "Residential",
+        "href": "/portfolio/residential",
+        "parent_id": "4",
+        "order": 1
+      },
+      {
+        "id": "4-2",
+        "name": "Commercial",
+        "href": "/portfolio/commercial",
+        "parent_id": "4",
+        "order": 2
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "name": "Design Process",
+    "href": "/design-process",
+    "icon": "pen-tool",
+    "order": 5
+  },
+  {
+    "id": "6",
+    "name": "Achievements",
+    "href": "/achievements",
+    "icon": "award",
+    "order": 6
+  },
+  {
+    "id": "7",
+    "name": "Publications",
+    "href": "/publications",
+    "icon": "book-open",
+    "order": 7
+  },
+  {
+    "id": "8",
+    "name": "Contact",
+    "href": "/contact",
+    "icon": "mail",
+    "order": 8
+  }
+]
